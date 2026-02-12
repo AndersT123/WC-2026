@@ -45,6 +45,38 @@ async def get_match_by_id(db: AsyncSession, match_id: uuid.UUID) -> Match:
     return match
 
 
+async def create_match(
+    db: AsyncSession,
+    home_team: str,
+    away_team: str,
+    match_datetime: datetime,
+    venue: str = None,
+) -> Match:
+    """Create a new match.
+
+    Args:
+        db: Database session
+        home_team: Home team name
+        away_team: Away team name
+        match_datetime: When the match will be played
+        venue: Optional venue location
+
+    Returns:
+        Created Match object
+    """
+    match = Match(
+        home_team=home_team,
+        away_team=away_team,
+        match_datetime=match_datetime,
+        venue=venue,
+        status="scheduled",
+    )
+    db.add(match)
+    await db.flush()
+    await db.refresh(match)
+    return match
+
+
 async def update_match_result(
     db: AsyncSession,
     match_id: uuid.UUID,

@@ -6,9 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db, get_current_user, get_admin_user
 from app.models.user import User
-from app.schemas.match import MatchResponse, UpdateMatchResultRequest
-from app.services.match_service import get_all_matches, get_match_by_id, update_match_result
+from app.schemas.match import MatchResponse, CreateMatchRequest, UpdateMatchResultRequest
+from app.services.match_service import get_all_matches, get_match_by_id, create_match, update_match_result
 from app.services.prediction_service import update_predictions_after_match
+from app.services.bet_service import settle_bets
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,54 @@ async def list_matches(
     """Get all matches."""
     matches = await get_all_matches(db)
     return [MatchResponse.model_validate(m) for m in matches]
+
+
+@router.post("", response_model=MatchResponse, status_code=201)
+async def create_match_endpoint(
+    request: CreateMatchRequest,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> MatchResponse:
+    """
+    Create a new future match.
+
+    **Admin only endpoint.** Creates a new scheduled match.
+
+    **Args:**
+        request: CreateMatchRequest with team names, datetime, and optional venue
+
+    **Returns:**
+        MatchResponse with created match data (ID auto-generated)
+
+    **Error Codes:**
+        - 401 Unauthorized: User not authenticated
+        - 403 Forbidden: User is not an admin
+        - 422 Unprocessable Entity: Invalid request data (datetime not in future, empty team names, etc.)
+
+    **Example:**
+        POST /matches
+        {
+            "home_team": "Argentina",
+            "away_team": "France",
+            "match_datetime": "2026-06-14T18:00:00",
+            "venue": "Berlin, Germany"
+        }
+    """
+    logger.info(
+        f"Admin {admin.email} creating match: {request.home_team} vs {request.away_team} "
+        f"at {request.match_datetime}"
+    )
+    match = await create_match(
+        db,
+        request.home_team,
+        request.away_team,
+        request.match_datetime,
+        request.venue,
+    )
+    await db.commit()
+    await db.refresh(match)
+    logger.info(f"Match {match.id} created successfully")
+    return MatchResponse.model_validate(match)
 
 
 @router.get("/{match_id}", response_model=MatchResponse)
@@ -94,6 +143,18 @@ async def update_match_result_endpoint(
     except Exception as e:
         logger.error(
             f"Error updating predictions for match {match_id}: {str(e)}",
+            exc_info=True
+        )
+
+    # Settle all bets for this match
+    try:
+        settled_count = await settle_bets(
+            db, match_id, request.home_score, request.away_score
+        )
+        logger.info(f"Settled {settled_count} bets for match {match_id}")
+    except Exception as e:
+        logger.error(
+            f"Error settling bets for match {match_id}: {str(e)}",
             exc_info=True
         )
 

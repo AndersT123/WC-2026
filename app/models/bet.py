@@ -56,13 +56,13 @@ class Bet(Base):
 
     @property
     def tokens(self) -> int:
-        """Always 3 tokens per bet."""
-        return 3
+        """Always 1 token per bet."""
+        return 1
 
     @property
     def potential_payout(self) -> float:
-        """Calculate potential payout: 3 × odds."""
-        return 3.0 * self.odds
+        """Calculate potential payout: 1 × odds."""
+        return 1.0 * self.odds
 
     def __repr__(self):
         return f"<Bet {self.id}: {self.outcome} @ {self.odds} ({self.status})>"

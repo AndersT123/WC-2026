@@ -87,7 +87,7 @@ async def place_bet(
     if not odds_for_outcome:
         raise InvalidInputError(f"No odds available for {outcome}")
 
-    # Create bet (always 3 tokens, no balance check)
+    # Create bet (always 1 token, no balance check)
     bet = Bet(
         user_id=user_id,
         match_id=match_id,
@@ -131,9 +131,9 @@ async def settle_bets(
 
         # Calculate payout
         if bet.outcome == actual_outcome.value:
-            # WIN: 3 × odds (decimal)
+            # WIN: 1 × odds (decimal)
             bet.status = BetStatus.WON
-            bet.actual_payout = 3.0 * bet.odds
+            bet.actual_payout = 1.0 * bet.odds
 
         elif bet.outcome == "draw" and actual_outcome != BetOutcome.DRAW:
             # Bet draw, didn't draw = LOSS
@@ -143,7 +143,7 @@ async def settle_bets(
         elif bet.outcome in ["home_win", "away_win"] and actual_outcome == BetOutcome.DRAW:
             # Bet win, but drew = PUSH (refund)
             bet.status = BetStatus.PUSH
-            bet.actual_payout = 3.0
+            bet.actual_payout = 1.0
 
         else:
             # LOSS
