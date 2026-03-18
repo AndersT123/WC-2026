@@ -52,7 +52,6 @@ htmlcov/
 *.sqlite3
 
 # Docker (deployment only)
-Dockerfile
 .dockerignore
 
 # Temporary/Generated Files
