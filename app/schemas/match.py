@@ -49,12 +49,13 @@ class CreateMatchRequest(BaseModel):
     def validate_datetime(cls, v: datetime) -> datetime:
         # Get current time in UTC, handling both naive and aware datetimes
         now = datetime.now(timezone.utc)
-        # Make v aware if it's naive
+        # Make v aware if it's naive (for comparison)
         if v.tzinfo is None:
             v = v.replace(tzinfo=timezone.utc)
         if v <= now:
             raise ValueError('Match datetime must be in the future')
-        return v
+        # Strip timezone info — DB column is timezone-naive, store as UTC
+        return v.replace(tzinfo=None)
 
 
 class UpdateMatchResultRequest(BaseModel):

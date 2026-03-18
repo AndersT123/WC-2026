@@ -43,7 +43,7 @@ class LeaderboardEntry(BaseModel):
 
     user_id: uuid.UUID
     username: str
-    total_points: int
+    total_points: float
     rank: int
 
 

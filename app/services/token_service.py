@@ -13,7 +13,8 @@ from app.exceptions import InvalidTokenError
 async def generate_magic_link_token(
     db: AsyncSession,
     email: str,
-    user_id: Optional[uuid.UUID] = None
+    user_id: Optional[uuid.UUID] = None,
+    username: Optional[str] = None
 ) -> str:
     """
     Generate a secure magic link token.
@@ -39,6 +40,7 @@ async def generate_magic_link_token(
         token=token,
         email=email,
         user_id=user_id,
+        username=username,
         expires_at=expires_at
     )
 

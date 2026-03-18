@@ -69,33 +69,44 @@ async def get_leaderboard(
     # Get league
     league = await get_league_by_id(db, league_id)
 
-    # Get all users in league with their points
-    # Note: All predictions for users in league are summed (predictions are global, not per-league)
-    result = await db.execute(
-        select(
-            User.id,
-            User.username,
-            func.sum(Prediction.points_earned).label("total_points"),
-        )
+    # Get all users in league
+    members_result = await db.execute(
+        select(User.id, User.username)
         .join(LeagueMembership, LeagueMembership.user_id == User.id)
-        .outerjoin(Prediction, Prediction.user_id == User.id)
         .where(LeagueMembership.league_id == league_id)
-        .group_by(User.id, User.username)
-        .order_by(func.sum(Prediction.points_earned).desc())
     )
-    rows = result.all()
+    members = members_result.all()
 
-    # Build leaderboard entries with rank
+    # Build leaderboard entries with both prediction points and bet payouts
     entries = []
-    for rank, (user_id, username, total_points) in enumerate(rows, 1):
+    for user_id, username in members:
+        pred_result = await db.execute(
+            select(func.sum(Prediction.points_earned))
+            .where(Prediction.user_id == user_id)
+        )
+        pred_score = pred_result.scalar() or 0.0
+
+        bet_result = await db.execute(
+            select(func.sum(Bet.actual_payout))
+            .where(Bet.user_id == user_id)
+            .where(Bet.status.in_(["won", "lost", "push"]))
+        )
+        bet_score = bet_result.scalar() or 0.0
+
+        total_points = float(pred_score) + float(bet_score)
         entries.append(
             LeaderboardEntry(
                 user_id=user_id,
                 username=username,
-                total_points=total_points or 0,
-                rank=rank,
+                total_points=total_points,
+                rank=0,  # Will be set after sorting
             )
         )
+
+    # Sort by total_points descending and assign ranks
+    entries.sort(key=lambda e: e.total_points, reverse=True)
+    for rank, entry in enumerate(entries, 1):
+        entry.rank = rank
 
     return LeaderboardResponse(
         league_id=league_id,

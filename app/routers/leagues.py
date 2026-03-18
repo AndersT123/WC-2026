@@ -17,6 +17,7 @@ from app.services.league_service import (
     get_user_leagues,
     get_league_by_id,
     get_league_member_count,
+    delete_league,
 )
 
 router = APIRouter(prefix="/leagues", tags=["leagues"])
@@ -69,6 +70,17 @@ async def join_new_league(
     await db.commit()
     await db.refresh(league)
     return LeagueResponse.model_validate(league)
+
+
+@router.delete("/{league_id}", status_code=204)
+async def delete_league_endpoint(
+    league_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Delete a league. Only the creator can do this."""
+    await delete_league(db, league_id, user.id)
+    await db.commit()
 
 
 @router.get("/{league_id}", response_model=LeagueWithMemberCount)

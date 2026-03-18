@@ -55,7 +55,7 @@ async def create_magic_link_for_signup(
         raise UserAlreadyExistsError("Email already registered")
 
     # Generate magic link token (user_id=None for signup)
-    token = await generate_magic_link_token(db, email, user_id=None)
+    token = await generate_magic_link_token(db, email, user_id=None, username=username)
 
     # Send email
     success = await send_magic_link_email(email, token, username)

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db, get_current_user, get_admin_user
 from app.models.user import User
 from app.schemas.match import MatchResponse, CreateMatchRequest, UpdateMatchResultRequest
-from app.services.match_service import get_all_matches, get_match_by_id, create_match, update_match_result
+from app.services.match_service import get_all_matches, get_match_by_id, create_match, update_match_result, delete_match
 from app.services.prediction_service import update_predictions_after_match
 from app.services.bet_service import settle_bets
 
@@ -83,6 +83,19 @@ async def get_match(
     """Get a single match by ID."""
     match = await get_match_by_id(db, match_id)
     return MatchResponse.model_validate(match)
+
+
+@router.delete("/{match_id}", status_code=204)
+async def delete_match_endpoint(
+    match_id: uuid.UUID,
+    admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Delete a match and all associated predictions and bets. Admin only."""
+    logger.info(f"Admin {admin.email} deleting match {match_id}")
+    await delete_match(db, match_id)
+    await db.commit()
+    logger.info(f"Match {match_id} deleted successfully")
 
 
 @router.put("/{match_id}/result", response_model=MatchResponse)

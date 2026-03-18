@@ -77,6 +77,21 @@ async def create_match(
     return match
 
 
+async def delete_match(db: AsyncSession, match_id: uuid.UUID) -> None:
+    """Delete a match and all associated predictions/bets (via CASCADE).
+
+    Args:
+        db: Database session
+        match_id: ID of the match to delete
+
+    Raises:
+        MatchNotFoundError: If match doesn't exist
+    """
+    match = await get_match_by_id(db, match_id)
+    await db.delete(match)
+    await db.flush()
+
+
 async def update_match_result(
     db: AsyncSession,
     match_id: uuid.UUID,

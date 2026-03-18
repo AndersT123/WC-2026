@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -94,17 +95,16 @@ app.include_router(bets.router)
 app.include_router(dev.router)  # Dev endpoints (localhost only)
 
 # Serve static files (HTML pages) - must be after all API routes
-from fastapi.responses import FileResponse
 
 @app.get("/")
 async def serve_root():
     """Serve login.html at root."""
-    return FileResponse(Path(__file__).parent.parent / "login.html")
+    return FileResponse("/app/login.html")
 
 @app.get("/{filename}.html")
 async def serve_html(filename: str):
     """Serve HTML files from project root."""
-    file_path = Path(__file__).parent.parent / f"{filename}.html"
+    file_path = Path(f"/app/{filename}.html")
 
     # Security: prevent directory traversal
     if ".." in filename:
@@ -121,6 +121,7 @@ async def serve_html(filename: str):
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler for unexpected errors."""
     print(f"Unexpected error: {str(exc)}")
-    return {
-        "detail": "An unexpected error occurred. Please try again later."
-    }
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "An unexpected error occurred. Please try again later."}
+    )

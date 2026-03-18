@@ -99,7 +99,7 @@ async def verify(
     - For login: Authenticates existing user
     - For logout: Clears authentication cookies
     - Sets httpOnly cookies with JWT tokens for login/signup
-    - Returns user data
+    - Redirects to appropriate page after verification
     """
     # Determine if this is signup, login, or logout
     from app.services.token_service import verify_token as check_token
@@ -108,23 +108,23 @@ async def verify(
     if action == "logout":
         # Logout flow - verify token and clear cookies
         user = await verify_magic_link(db, token)
-        response.delete_cookie(key="access_token")
-        response.delete_cookie(key="refresh_token")
         # Redirect to login page with success message
         redirect_url = f"{settings.frontend_url}/login.html?logout=success"
-        return RedirectResponse(url=redirect_url, status_code=302)
+        response = RedirectResponse(url=redirect_url, status_code=302)
+        response.delete_cookie(key="access_token")
+        response.delete_cookie(key="refresh_token")
+        return response
 
     if magic_link.user_id is None:
-        # Signup flow
-        if not username:
+        # Signup flow - use username stored in token, fall back to URL param
+        effective_username = magic_link.username or username
+        if not effective_username:
             raise InvalidTokenError("Username required for signup")
 
-        user = await create_user_from_token(db, token, username)
-        message = "Successfully created account and signed in"
+        user = await create_user_from_token(db, token, effective_username)
     else:
         # Login flow
         user = await verify_magic_link(db, token)
-        message = "Successfully signed in"
 
     # Generate JWT tokens
     access_token = create_access_token(user.id)
@@ -133,12 +133,20 @@ async def verify(
     # Set httpOnly cookies (secure=False for local development)
     use_secure = settings.frontend_url.startswith("https://")
 
+    # Redirect to betting page after successful login/signup
+    redirect_url = f"{settings.frontend_url}/betting.html"
+    response = RedirectResponse(url=redirect_url, status_code=302)
+
+    # Set cookies on the redirect response
+    # Use SameSite=None with Secure=True for HTTPS, lax for HTTP (local dev)
+    samesite = "none" if use_secure else "lax"
+
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
         secure=use_secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=settings.access_token_expire_minutes * 60
     )
 
@@ -147,14 +155,11 @@ async def verify(
         value=refresh_token,
         httponly=True,
         secure=use_secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=settings.refresh_token_expire_days * 24 * 60 * 60
     )
 
-    return VerifyResponse(
-        message=message,
-        user=UserResponse.model_validate(user)
-    )
+    return response
 
 
 @router.post("/refresh", response_model=RefreshResponse)
@@ -183,13 +188,14 @@ async def refresh(
 
     # Set new access token cookie (secure=False for local development)
     use_secure = settings.frontend_url.startswith("https://")
+    samesite = "none" if use_secure else "lax"
 
     response.set_cookie(
         key="access_token",
         value=new_access_token,
         httponly=True,
         secure=use_secure,
-        samesite="lax",
+        samesite=samesite,
         max_age=settings.access_token_expire_minutes * 60
     )
 
@@ -227,4 +233,6 @@ async def get_me(current_user: User = Depends(get_current_user)):
     - Requires valid access token in cookie
     - Returns user profile information
     """
-    return UserResponse.model_validate(current_user)
+    data = UserResponse.model_validate(current_user)
+    data.is_admin = current_user.email in settings.admin_emails
+    return data

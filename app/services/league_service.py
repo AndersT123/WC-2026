@@ -54,7 +54,20 @@ async def create_league(
 
     Returns:
         Created League object
+
+    Raises:
+        UserAlreadyExistsError: If user already has a league with the same name
     """
+    # Check if creator already has a league with this name
+    from app.exceptions import UserAlreadyExistsError
+    result = await db.execute(
+        select(League).where(
+            (League.creator_id == creator_id) & (League.name == name)
+        )
+    )
+    if result.scalars().first():
+        raise UserAlreadyExistsError("You already have a league with this name")
+
     # Generate unique code
     code = await generate_unique_league_code(db)
 
@@ -195,6 +208,30 @@ async def verify_league_membership(
         )
     )
     return result.scalars().first() is not None
+
+
+async def delete_league(
+    db: AsyncSession,
+    league_id: uuid.UUID,
+    user_id: uuid.UUID,
+) -> None:
+    """Delete a league. Only the creator can delete it.
+
+    Args:
+        db: Database session
+        league_id: ID of the league
+        user_id: ID of the requesting user
+
+    Raises:
+        LeagueNotFoundError: If league doesn't exist
+        ForbiddenError: If user is not the creator
+    """
+    from app.exceptions import ForbiddenError
+    league = await get_league_by_id(db, league_id)
+    if league.creator_id != user_id:
+        raise ForbiddenError("Only the league creator can delete it")
+    await db.delete(league)
+    await db.flush()
 
 
 async def get_league_member_count(db: AsyncSession, league_id: uuid.UUID) -> int:
