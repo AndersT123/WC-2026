@@ -16,6 +16,8 @@ from app.schemas.league import (
     CombinedLeaderboardEntry,
     CombinedLeaderboardResponse
 )
+from app.schemas.match import MatchResultsResponse, MatchResultEntry, UserMatchResult
+from app.models.match import Match
 from app.services.prediction_service import upsert_prediction, get_user_predictions_with_matches
 from app.services.league_service import get_league_by_id
 
@@ -180,4 +182,83 @@ async def get_combined_leaderboard(
         league_id=league_id,
         league_name=league.name,
         entries=entries,
+    )
+
+
+@router.get("/league/{league_id}/match-results", response_model=MatchResultsResponse)
+async def get_match_results(
+    league_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> MatchResultsResponse:
+    """Get all completed matches with every league member's prediction and bet."""
+    # Verify membership
+    await get_current_user_league_member(league_id, user, db)
+
+    # Get league
+    league = await get_league_by_id(db, league_id)
+
+    # Get league members
+    members_result = await db.execute(
+        select(User.id, User.username)
+        .join(LeagueMembership, LeagueMembership.user_id == User.id)
+        .where(LeagueMembership.league_id == league_id)
+    )
+    members = members_result.all()
+    member_ids = [m.id for m in members]
+
+    # Get completed matches sorted descending by datetime
+    matches_result = await db.execute(
+        select(Match)
+        .where(Match.status == "completed")
+        .order_by(Match.match_datetime.desc())
+    )
+    completed_matches = matches_result.scalars().all()
+
+    match_entries = []
+    for match in completed_matches:
+        # Bulk fetch predictions for this match
+        preds_result = await db.execute(
+            select(Prediction)
+            .where(and_(Prediction.match_id == match.id, Prediction.user_id.in_(member_ids)))
+        )
+        preds_by_user = {p.user_id: p for p in preds_result.scalars().all()}
+
+        # Bulk fetch bets for this match
+        bets_result = await db.execute(
+            select(Bet)
+            .where(and_(Bet.match_id == match.id, Bet.user_id.in_(member_ids)))
+        )
+        bets_by_user = {b.user_id: b for b in bets_result.scalars().all()}
+
+        user_results = []
+        for member in members:
+            pred = preds_by_user.get(member.id)
+            bet = bets_by_user.get(member.id)
+            user_results.append(UserMatchResult(
+                user_id=member.id,
+                username=member.username,
+                predicted_home=pred.home_score if pred else None,
+                predicted_away=pred.away_score if pred else None,
+                points_earned=float(pred.points_earned) if pred and pred.points_earned is not None else None,
+                bet_outcome=bet.outcome.value if bet else None,
+                bet_odds=bet.odds if bet else None,
+                bet_status=bet.status.value if bet else None,
+                bet_payout=bet.actual_payout if bet else None,
+            ))
+
+        match_entries.append(MatchResultEntry(
+            match_id=match.id,
+            home_team=match.home_team,
+            away_team=match.away_team,
+            match_datetime=match.match_datetime,
+            home_score=match.home_score,
+            away_score=match.away_score,
+            user_results=user_results,
+        ))
+
+    return MatchResultsResponse(
+        league_id=league_id,
+        league_name=league.name,
+        matches=match_entries,
     )

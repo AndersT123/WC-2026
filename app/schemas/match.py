@@ -77,3 +77,33 @@ class UpdateMatchResultRequest(BaseModel):
 from app.schemas.prediction import PredictionResponse
 
 MatchWithPrediction.model_rebuild()
+
+
+class UserMatchResult(BaseModel):
+    user_id: uuid.UUID
+    username: str
+    # Witt Classic
+    predicted_home: Optional[int] = None
+    predicted_away: Optional[int] = None
+    points_earned: Optional[float] = None
+    # Betting
+    bet_outcome: Optional[str] = None   # "home_win" / "draw" / "away_win"
+    bet_odds: Optional[float] = None
+    bet_status: Optional[str] = None    # "won" / "lost" / "push" / "pending"
+    bet_payout: Optional[float] = None
+
+
+class MatchResultEntry(BaseModel):
+    match_id: uuid.UUID
+    home_team: str
+    away_team: str
+    match_datetime: datetime
+    home_score: int
+    away_score: int
+    user_results: list["UserMatchResult"]
+
+
+class MatchResultsResponse(BaseModel):
+    league_id: uuid.UUID
+    league_name: str
+    matches: list["MatchResultEntry"]

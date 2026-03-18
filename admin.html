@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Match Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-button {
+            padding: 10px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background: #e0e0e0;
+        }
+
+        .nav-button.logout {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .nav-button.logout:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .tab-button {
+            padding: 16px 24px;
+            background: #f5f5f5;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            flex: 1;
+            text-align: center;
+        }
+
+        .tab-button:hover {
+            background: #efefef;
+            color: #333;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Form Sections */
+        .form-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .button-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .button-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .button-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Matches List */
+        .matches-container {
+            display: grid;
+            gap: 16px;
+        }
+
+        .match-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .match-info {
+            flex: 1;
+        }
+
+        .match-teams {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .match-details {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .match-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-scheduled {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-in-progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .match-score {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .match-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .action-button:hover {
+            background: #764ba2;
+        }
+
+        .action-button.danger {
+            background: #e53935;
+        }
+
+        .action-button.danger:hover {
+            background: #b71c1c;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-button:hover {
+            color: #333;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .message.error {
+            background: #ffcdd2;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .nav-buttons {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .match-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .match-actions {
+                width: 100%;
+            }
+
+            .action-button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>⚙️ Admin Dashboard</h1>
+                <p>Manage matches and results</p>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-button" onclick="navigateTo('witt-classic.html')">⚽ Predictions</button>
+                <button class="nav-button" onclick="navigateTo('results.html')">📊 Results</button>
+                <button class="nav-button logout" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="message" class="message"></div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('create')">➕ Create Match</button>
+            <button class="tab-button" onclick="switchTab('update')">📊 Update Results</button>
+        </div>
+
+        <!-- Create Match Tab -->
+        <div id="create" class="tab-content active">
+            <div class="form-card">
+                <h2 style="margin-bottom: 20px; color: #333;">Create New Match</h2>
+                <form onsubmit="handleCreateMatch(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Home Team</label>
+                            <input type="text" id="home_team" required placeholder="e.g., Argentina">
+                        </div>
+                        <div class="form-group">
+                            <label>Away Team</label>
+                            <input type="text" id="away_team" required placeholder="e.g., France">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Match Date & Time</label>
+                        <input type="datetime-local" id="match_datetime" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Venue (Optional)</label>
+                        <input type="text" id="venue" placeholder="e.g., Berlin, Germany">
+                    </div>
+
+                    <button type="submit" id="create-match-btn" class="button button-primary" style="width: 100%; margin-top: 16px;">
+                        ➕ Create Match
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Update Results Tab -->
+        <div id="update" class="tab-content">
+            <div class="matches-container" id="matches-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading matches...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Results Modal -->
+    <div id="update-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modal-title">Update Match Result</span>
+                <button class="close-button" onclick="closeModal()">&times;</button>
+            </div>
+            <form onsubmit="handleUpdateMatch(event)">
+                <div style="background: #f9f9f9; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <div id="modal-match-info" style="font-size: 16px; font-weight: 600; color: #333;"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Home Score</label>
+                        <input type="number" id="home_score" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Away Score</label>
+                        <input type="number" id="away_score" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="match_status" required>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="completed" selected>Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="button button-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="button button-primary">✓ Update Result</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Use localhost for development, otherwise use current origin
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+        let currentUser = null;
+        let allMatches = [];
+        let selectedMatchId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth();
+        });
+
+        async function checkAdminAuth() {
+            try {
+                let response = await fetch(`${API_URL}/auth/me`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    // Access token expired — try refreshing it
+                    const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    if (!refreshResponse.ok) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                    if (!response.ok) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                }
+
+                currentUser = await response.json();
+                await loadMatches();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadMatches() {
+            try {
+                const response = await fetch(`${API_URL}/matches`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load matches');
+                }
+
+                allMatches = await response.json();
+                renderMatches();
+            } catch (error) {
+                console.error('Failed to load matches:', error);
+                showMessage('Failed to load matches', 'error');
+            }
+        }
+
+        function renderMatches() {
+            const container = document.getElementById('matches-list');
+            container.innerHTML = '';
+
+            if (allMatches.length === 0) {
+                container.innerHTML = '<div class="empty-state">No matches yet</div>';
+                return;
+            }
+
+            // Sort matches: scheduled first, then by date
+            const sorted = [...allMatches].sort((a, b) => {
+                const statusOrder = { 'scheduled': 0, 'in_progress': 1, 'completed': 2, 'cancelled': 3 };
+                if (statusOrder[a.status] !== statusOrder[b.status]) {
+                    return statusOrder[a.status] - statusOrder[b.status];
+                }
+                return new Date(a.match_datetime) - new Date(b.match_datetime);
+            });
+
+            sorted.forEach(match => {
+                container.appendChild(createMatchCard(match));
+            });
+        }
+
+        function createMatchCard(match) {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+
+            const datetime = new Date(match.match_datetime).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            const score = match.status === 'completed' ?
+                `${match.home_score} - ${match.away_score}` :
+                '- -';
+
+            card.innerHTML = `
+                <div class="match-info">
+                    <div class="match-teams">${match.home_team} vs ${match.away_team}</div>
+                    <div class="match-details">
+                        📅 ${datetime}
+                        ${match.venue ? `<br>📍 ${match.venue}` : ''}
+                    </div>
+                    <span class="match-status status-${match.status}">${match.status.toUpperCase()}</span>
+                </div>
+                ${match.status === 'completed' ? `<div class="match-score">${score}</div>` : '<div class="match-score">-</div>'}
+                <div class="match-actions">
+                    <button class="action-button" onclick="openUpdateModal('${match.id}')">✏️ Edit</button>
+                    <button class="action-button danger" onclick="confirmDeleteMatch('${match.id}', '${match.home_team} vs ${match.away_team}')">🗑️ Delete</button>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function openUpdateModal(matchId) {
+            const match = allMatches.find(m => m.id === matchId);
+            if (!match) return;
+
+            selectedMatchId = matchId;
+
+            const datetime = new Date(match.match_datetime).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            document.getElementById('modal-match-info').innerHTML = `${match.home_team} vs ${match.away_team}<br><span style="font-size: 12px; color: #666;">📅 ${datetime}</span>`;
+            document.getElementById('home_score').value = match.home_score || '';
+            document.getElementById('away_score').value = match.away_score || '';
+            document.getElementById('match_status').value = match.status;
+
+            document.getElementById('update-modal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('update-modal').classList.remove('show');
+            selectedMatchId = null;
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load matches if switching to update tab
+            if (tabName === 'update') {
+                loadMatches();
+            }
+        }
+
+        async function handleCreateMatch(event) {
+            event.preventDefault();
+
+            const homeTeam = document.getElementById('home_team').value;
+            const awayTeam = document.getElementById('away_team').value;
+            const matchDatetime = document.getElementById('match_datetime').value;
+            const venue = document.getElementById('venue').value;
+            const submitBtn = document.getElementById('create-match-btn');
+
+            if (!homeTeam || !awayTeam || !matchDatetime) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<span class="button-spinner"></span>Creating...';
+
+            try {
+                // Parse datetime-local format (YYYY-MM-DDTHH:mm) and convert to ISO
+                const dateObj = new Date(matchDatetime + ':00');
+                if (isNaN(dateObj.getTime())) {
+                    throw new Error('Invalid datetime format');
+                }
+
+                const response = await fetch(`${API_URL}/matches`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        home_team: homeTeam,
+                        away_team: awayTeam,
+                        match_datetime: dateObj.toISOString(),
+                        venue: venue || null
+                    })
+                });
+
+                if (!response.ok) {
+                    let errorMsg = 'Failed to create match';
+                    const text = await response.text();
+                    try {
+                        const error = JSON.parse(text);
+                        errorMsg = error.detail || error.message || errorMsg;
+                    } catch (e) {
+                        errorMsg = text || `HTTP ${response.status}`;
+                    }
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+                showMessage('✅ Match created successfully!', 'success');
+
+                // Clear form
+                document.getElementById('home_team').value = '';
+                document.getElementById('away_team').value = '';
+                document.getElementById('match_datetime').value = '';
+                document.getElementById('venue').value = '';
+
+                // Reload matches
+                await loadMatches();
+            } catch (error) {
+                console.error('Error creating match:', error);
+                showMessage(error.message, 'error');
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = '➕ Create Match';
+            }
+        }
+
+        async function handleUpdateMatch(event) {
+            event.preventDefault();
+
+            if (!selectedMatchId) return;
+
+            const homeScore = parseInt(document.getElementById('home_score').value);
+            const awayScore = parseInt(document.getElementById('away_score').value);
+            const status = document.getElementById('match_status').value;
+
+            try {
+                const response = await fetch(`${API_URL}/matches/${selectedMatchId}/result`, {
+                    method: 'PUT',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        home_score: homeScore,
+                        away_score: awayScore,
+                        status: status
+                    })
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    let errorMsg = 'Failed to update match';
+                    try { errorMsg = JSON.parse(text).detail || errorMsg; } catch (e) { errorMsg = text || errorMsg; }
+                    throw new Error(errorMsg);
+                }
+
+                showMessage('✓ Match updated successfully!', 'success');
+                closeModal();
+                await loadMatches();
+            } catch (error) {
+                console.error('Error updating match:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        function confirmDeleteMatch(matchId, matchLabel) {
+            if (!confirm(`Delete "${matchLabel}"?\n\nThis will also remove all predictions and bets for this match, and update scores accordingly.`)) return;
+            handleDeleteMatch(matchId, matchLabel);
+        }
+
+        async function handleDeleteMatch(matchId, matchLabel) {
+            try {
+                const response = await fetch(`${API_URL}/matches/${matchId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    let errorMsg = 'Failed to delete match';
+                    try { errorMsg = JSON.parse(text).detail || errorMsg; } catch(e) { errorMsg = text || errorMsg; }
+                    throw new Error(errorMsg);
+                }
+
+                showMessage(`Match "${matchLabel}" deleted successfully`, 'success');
+                await loadMatches();
+            } catch (error) {
+                console.error('Error deleting match:', error);
+                showMessage(error.message, 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Set minimum datetime to now
+        document.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('match_datetime').min = now.toISOString().slice(0, 16);
+        });
+    </script>
+</body>
+</html>

@@ -17,6 +17,7 @@ COPY witt-classic.html witt-classic.html
 COPY league-standings.html league-standings.html
 COPY admin.html admin.html
 COPY betting.html betting.html
+COPY results.html results.html
 
 # Expose port (Scaleway uses PORT env variable)
 ENV PORT=8080

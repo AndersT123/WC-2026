@@ -61,7 +61,6 @@ get-pip.py
 *.pid
 
 # Frontend builds (if applicable)
-*.html
 node_modules/
 dist/
 

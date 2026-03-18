@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Results - World Cup Predictions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .header-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .no-league-panel {
+            max-width: 480px;
+            margin: 80px auto;
+            padding: 32px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .no-league-panel h2 {
+            margin-bottom: 8px;
+        }
+
+        .no-league-panel p {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .matches-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .match-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .match-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .match-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .match-meta {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .match-score {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th {
+            background: #f8f8f8;
+            padding: 10px 16px;
+            text-align: left;
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .results-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .results-table tr:hover td {
+            background: #fafafa;
+        }
+
+        .username-cell {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .prediction-cell {
+            color: #555;
+        }
+
+        .prediction-score {
+            font-weight: 600;
+        }
+
+        .points-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .points-high {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .points-mid {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .points-low {
+            background: #f5f5f5;
+            color: #888;
+        }
+
+        .bet-cell {
+            color: #555;
+        }
+
+        .bet-outcome {
+            font-weight: 500;
+        }
+
+        .bet-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .status-won {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-lost {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-push {
+            background: #f5f5f5;
+            color: #888;
+        }
+
+        .status-pending {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .em-dash {
+            color: #ccc;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .match-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .results-table th:nth-child(3),
+            .results-table td:nth-child(3) {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>📊 Match Results</h1>
+                <p id="league-name">Loading...</p>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="navigateTo('league-standings.html')">🏆 Standings</button>
+                <button class="nav-btn" onclick="navigateTo('witt-classic.html')">⚽ Predictions</button>
+                <button class="nav-btn" onclick="navigateTo('betting.html')">🎲 Place Bets</button>
+                <button id="admin-btn" class="nav-btn" onclick="navigateTo('admin.html')" style="display: none;">⚙️ Admin</button>
+            </div>
+        </div>
+
+        <!-- No-league panel -->
+        <div id="no-league-panel" class="no-league-panel" style="display:none;">
+            <h2>You're not in a league yet</h2>
+            <p>Join a league to see match results.</p>
+        </div>
+
+        <!-- Matches Container -->
+        <div class="matches-container" id="matches-container">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+
+        let currentLeagueId = null;
+
+        async function init() {
+            await checkAuth();
+            await loadResults();
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                if (response.ok) {
+                    const user = await response.json();
+                    if (user.is_admin) {
+                        document.getElementById('admin-btn').style.display = 'block';
+                    }
+                } else {
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const leaguesResponse = await fetch(`${API_URL}/leagues`, { credentials: 'include' });
+                if (!leaguesResponse.ok) throw new Error('Failed to load leagues');
+
+                const leagues = await leaguesResponse.json();
+                if (leagues.length === 0) {
+                    document.getElementById('no-league-panel').style.display = 'block';
+                    return;
+                }
+
+                currentLeagueId = leagues[0].id;
+                const leagueName = localStorage.getItem('selectedLeague') || leagues[0].name || 'My League';
+                document.getElementById('league-name').textContent = leagueName;
+
+                const resultsResponse = await fetch(
+                    `${API_URL}/predictions/league/${currentLeagueId}/match-results`,
+                    { credentials: 'include' }
+                );
+
+                if (!resultsResponse.ok) {
+                    throw new Error(`Failed to load results: ${resultsResponse.status}`);
+                }
+
+                const data = await resultsResponse.json();
+                document.getElementById('league-name').textContent = data.league_name;
+                renderResults(data);
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('matches-container').innerHTML =
+                    `<div class="empty-state"><h2>Error loading results</h2><p>${error.message}</p></div>`;
+            }
+        }
+
+        function renderResults(data) {
+            const container = document.getElementById('matches-container');
+            container.innerHTML = '';
+
+            if (data.matches.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h2>No completed matches yet</h2>
+                        <p>Results will appear here once matches are played.</p>
+                    </div>`;
+                return;
+            }
+
+            data.matches.forEach(match => {
+                container.appendChild(createMatchCard(match));
+            });
+        }
+
+        function createMatchCard(match) {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+
+            const dateStr = formatDateTime(match.match_datetime);
+
+            card.innerHTML = `
+                <div class="match-header">
+                    <div>
+                        <div class="match-title">${match.home_team} vs ${match.away_team}</div>
+                        <div class="match-meta">${dateStr}</div>
+                    </div>
+                    <div class="match-score">Final: ${match.home_score} – ${match.away_score}</div>
+                </div>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Prediction</th>
+                            <th>Bet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${match.user_results.map(u => buildUserRow(u)).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            return card;
+        }
+
+        function buildUserRow(u) {
+            // Prediction cell
+            let predCell = '<span class="em-dash">—</span>';
+            if (u.predicted_home !== null && u.predicted_away !== null) {
+                const score = `${u.predicted_home}–${u.predicted_away}`;
+                let pointsHtml = '';
+                if (u.points_earned !== null) {
+                    const pts = u.points_earned;
+                    const cls = pts >= 3 ? 'points-high' : pts >= 1 ? 'points-mid' : 'points-low';
+                    pointsHtml = `<span class="points-badge ${cls}">${pts}pts</span>`;
+                }
+                predCell = `<span class="prediction-score">${score}</span>${pointsHtml}`;
+            }
+
+            // Bet cell
+            let betCell = '<span class="em-dash">—</span>';
+            if (u.bet_outcome !== null) {
+                const outcomeLabel = formatOutcome(u.bet_outcome);
+                const odds = u.bet_odds !== null ? `@${u.bet_odds.toFixed(2)}` : '';
+                let statusHtml = '';
+                if (u.bet_status !== null) {
+                    const statusCls = `status-${u.bet_status}`;
+                    let payoutLabel = '';
+                    if (u.bet_status === 'won' && u.bet_payout !== null) {
+                        payoutLabel = ` +${u.bet_payout.toFixed(2)}`;
+                    } else if (u.bet_status === 'lost') {
+                        payoutLabel = ' 0';
+                    }
+                    statusHtml = `<span class="bet-status ${statusCls}">${u.bet_status.toUpperCase()}${payoutLabel}</span>`;
+                }
+                betCell = `<span class="bet-outcome">${outcomeLabel} ${odds}</span>${statusHtml}`;
+            }
+
+            return `
+                <tr>
+                    <td class="username-cell">${escapeHtml(u.username)}</td>
+                    <td class="prediction-cell">${predCell}</td>
+                    <td class="bet-cell">${betCell}</td>
+                </tr>`;
+        }
+
+        function formatOutcome(outcome) {
+            switch (outcome) {
+                case 'home_win': return 'Home';
+                case 'away_win': return 'Away';
+                case 'draw': return 'Draw';
+                default: return outcome;
+            }
+        }
+
+        function formatDateTime(datetime) {
+            const d = new Date(datetime);
+            return d.toLocaleDateString('en-GB', {
+                weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
+            });
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Betting - World Cup Predictions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .balance-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .balance-display .label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .balance-display .amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .nav-button {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-button:hover {
+            background: #e0e0e0;
+        }
+
+        .nav-button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-button.primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Match Cards */
+        .matches-container {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .match-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .match-time {
+            font-size: 12px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .match-status {
+            font-size: 11px;
+            padding: 4px 8px;
+            background: #e3f2fd;
+            color: #1565c0;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .bet-success-indicator {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #4caf50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            animation: slideInDown 0.4s ease-out, fadeOut 2s ease-out 2.5s forwards;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        @keyframes slideInDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .vs {
+            color: #999;
+            font-weight: 600;
+        }
+
+        /* Odds Display */
+        .odds-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .odds-button {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .odds-button:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+        }
+
+        .odds-button.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+        }
+
+        .outcome-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .odds-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .probability {
+            font-size: 10px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* Bet Placement */
+        .bet-placement {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .bet-placement.show {
+            display: block;
+        }
+
+        .bet-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .bet-input-group label {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .bet-input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .bet-input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .bet-summary {
+            margin-top: 12px;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .bet-summary.show {
+            display: block;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 6px;
+            border-top: 1px solid #eee;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .place-bet-btn {
+            margin-top: 12px;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .place-bet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .place-bet-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Bet History */
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin: 32px 0 16px 0;
+        }
+
+        .bets-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f8f8f8;
+            padding: 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .table td {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-won {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status-lost {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .status-push {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Messages */
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .message.error {
+            background: #ffcdd2;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        /* League Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .modal-field {
+            margin-bottom: 16px;
+        }
+
+        .modal-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .modal-field input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-field input:focus {
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-cancel:hover { background: #e0e0e0; }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .modal-message {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .modal-message.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+            display: block;
+        }
+
+        .modal-message.error {
+            background: #ffcdd2;
+            color: #c62828;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .odds-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .match-teams {
+                flex-direction: column;
+            }
+
+            .table {
+                font-size: 12px;
+            }
+
+            .table th,
+            .table td {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>🎲 Betting</h1>
+                <p>Place bets on match outcomes</p>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-button" onclick="navigateTo('league-standings.html')">🏆 Standings</button>
+                <button class="nav-button primary" onclick="navigateTo('witt-classic.html')">⚽ Predictions</button>
+                <button class="nav-button" onclick="navigateTo('results.html')">📊 Results</button>
+                <button class="nav-button" onclick="openModal('createLeagueModal')">🏟️ Create League</button>
+                <button class="nav-button" onclick="openModal('joinLeagueModal')">🤝 Join League</button>
+                <button id="admin-btn" class="nav-button" onclick="navigateTo('admin.html')" style="display: none;">⚙️ Admin</button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="message" class="message"></div>
+
+    <!-- Create League Modal -->
+    <div id="createLeagueModal" class="modal-overlay" onclick="handleOverlayClick(event, 'createLeagueModal')">
+        <div class="modal">
+            <h2>🏟️ Create League</h2>
+            <p>Create a private league and invite friends with the share code.</p>
+            <div id="createLeagueMsg" class="modal-message"></div>
+            <div class="modal-field">
+                <label for="leagueName">League Name *</label>
+                <input type="text" id="leagueName" placeholder="e.g. Office Champions" maxlength="100">
+            </div>
+            <div class="modal-field">
+                <label for="leagueDesc">Description (optional)</label>
+                <input type="text" id="leagueDesc" placeholder="A short description" maxlength="200">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('createLeagueModal')">Cancel</button>
+                <button class="btn-submit" id="createLeagueBtn" onclick="handleCreateLeague()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join League Modal -->
+    <div id="joinLeagueModal" class="modal-overlay" onclick="handleOverlayClick(event, 'joinLeagueModal')">
+        <div class="modal">
+            <h2>🤝 Join League</h2>
+            <p>Enter the invite code shared by the league creator.</p>
+            <div id="joinLeagueMsg" class="modal-message"></div>
+            <div class="modal-field">
+                <label for="leagueCode">Invite Code *</label>
+                <input type="text" id="leagueCode" placeholder="e.g. ABC123" maxlength="20" style="text-transform:uppercase">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('joinLeagueModal')">Cancel</button>
+                <button class="btn-submit" id="joinLeagueBtn" onclick="handleJoinLeague()">Join</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- Matches -->
+        <div class="matches-container" id="matches-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading matches...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Use localhost for development, otherwise use current origin
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+        let currentMatch = null;
+        let currentOutcome = null;
+        let matches = [];
+        let userBets = {};
+        let userPredictions = {};
+        let matchOdds = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        async function checkAuth() {
+            try {
+                let response = await fetch(`${API_URL}/auth/me`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    // Access token expired — try refreshing it
+                    const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    if (!refreshResponse.ok) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                    if (!response.ok) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                }
+
+                const user = await response.json();
+
+                if (user.is_admin) {
+                    document.getElementById('admin-btn').style.display = 'block';
+                }
+
+                // Load user data first, then render matches
+                await loadUserBets();
+                await loadUserPredictions();
+                await loadMatches();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        async function loadUserBets() {
+            try {
+                const response = await fetch(`${API_URL}/bets`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const bets = await response.json();
+                    // Create a map of match_id -> bet for quick lookup
+                    userBets = {};
+                    bets.forEach(bet => {
+                        userBets[bet.match_id] = bet;
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load user bets:', error);
+            }
+        }
+
+        async function loadUserPredictions() {
+            try {
+                let leagueId = localStorage.getItem('selectedLeague');
+
+                // If no league selected, get user's first league
+                if (!leagueId) {
+                    const leaguesResponse = await fetch(`${API_URL}/leagues`, {
+                        credentials: 'include'
+                    });
+
+                    if (leaguesResponse.ok) {
+                        const leagues = await leaguesResponse.json();
+                        if (leagues.length > 0) {
+                            leagueId = leagues[0].id;
+                        }
+                    }
+                }
+
+                if (!leagueId) {
+                    console.warn('No league available for predictions');
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/predictions/league/${leagueId}/me`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const predictions = await response.json();
+                    // Create a map of match_id -> prediction for quick lookup
+                    userPredictions = {};
+                    predictions.forEach(pred => {
+                        userPredictions[pred.match_id] = pred;
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load user predictions:', error);
+            }
+        }
+
+        async function loadMatches() {
+            try {
+                const response = await fetch(`${API_URL}/matches`, {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load matches');
+                }
+
+                matches = await response.json();
+                renderMatches();
+            } catch (error) {
+                console.error('Failed to load matches:', error);
+                showMessage('Failed to load matches', 'error');
+            }
+        }
+
+        function renderMatches() {
+            const container = document.getElementById('matches-container');
+            container.innerHTML = '';
+
+            const completed = matches.filter(m => m.status === 'completed');
+            const scheduled = matches.filter(m => m.status === 'scheduled');
+
+            if (completed.length === 0 && scheduled.length === 0) {
+                container.innerHTML = '<div class="empty-state">No matches available</div>';
+                return;
+            }
+
+            // Show completed matches first
+            if (completed.length > 0) {
+                completed.forEach(match => {
+                    container.appendChild(createCompletedMatchCard(match));
+                });
+            }
+
+            // Show scheduled matches
+            if (scheduled.length > 0) {
+                if (completed.length > 0) {
+                    const divider = document.createElement('div');
+                    divider.style.height = '1px';
+                    divider.style.background = '#eee';
+                    divider.style.margin = '24px 0';
+                    container.appendChild(divider);
+                }
+
+                scheduled.forEach((match, index) => {
+                    const isFirstUnplayed = index === 0;
+                    const card = createMatchCard(match, isFirstUnplayed);
+                    container.appendChild(card);
+                });
+            }
+
+            // Add spacing for bet placement section
+            const spacer = document.createElement('div');
+            spacer.style.height = '100px';
+            container.appendChild(spacer);
+
+            // Apply highlighting based on database state
+            applyBetHighlighting();
+
+            // Scroll to first unplayed match
+            scrollToFirstUnplayed();
+        }
+
+        function applyBetHighlighting() {
+            // Clear all selections and re-apply based on userBets (database state)
+            document.querySelectorAll('.odds-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Apply highlighting based on what's in the database
+            matches.forEach(match => {
+                const userBet = userBets[match.id];
+                if (userBet) {
+                    const outcomeText =
+                        userBet.outcome === 'home_win' ? 'Home Win' :
+                        userBet.outcome === 'away_win' ? 'Away Win' : 'Draw';
+
+                    const buttons = document.querySelectorAll(`#odds-${match.id} .odds-button`);
+                    buttons.forEach(btn => {
+                        const label = btn.querySelector('.outcome-label');
+                        if (label && label.textContent === outcomeText) {
+                            btn.classList.add('selected');
+                        }
+                    });
+                }
+            });
+        }
+
+        function createMatchCard(match, isFirstUnplayed = false) {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            card.dataset.matchId = match.id;
+            if (isFirstUnplayed) {
+                card.id = 'first-unplayed';
+            }
+
+            const datetime = new Date(match.match_datetime).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            const userBet = userBets[match.id];
+
+            card.innerHTML = `
+                <div class="match-header">
+                    <div class="match-time">${datetime}</div>
+                    <div class="match-status">SCHEDULED</div>
+                </div>
+
+                <div class="match-teams">
+                    <div class="team">
+                        <div class="team-name">${match.home_team}</div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="team">
+                        <div class="team-name">${match.away_team}</div>
+                    </div>
+                </div>
+
+                <div class="odds-grid" id="odds-${match.id}">
+                    <button class="odds-button" onclick="placeBet('${match.id}', 'home_win', event)">
+                        <div class="outcome-label">Home Win</div>
+                        <div class="odds-value" id="odds-home_win-${match.id}">-</div>
+                        <div class="probability" id="prob-home_win-${match.id}"></div>
+                    </button>
+                    <button class="odds-button" onclick="placeBet('${match.id}', 'draw', event)">
+                        <div class="outcome-label">Draw</div>
+                        <div class="odds-value" id="odds-draw-${match.id}">-</div>
+                        <div class="probability" id="prob-draw-${match.id}"></div>
+                    </button>
+                    <button class="odds-button" onclick="placeBet('${match.id}', 'away_win', event)">
+                        <div class="outcome-label">Away Win</div>
+                        <div class="odds-value" id="odds-away_win-${match.id}">-</div>
+                        <div class="probability" id="prob-away_win-${match.id}"></div>
+                    </button>
+                </div>
+            `;
+
+            // Load odds
+            loadMatchOdds(match.id);
+
+            // Highlight existing bet if present - store for later application
+            if (userBet) {
+                card.dataset.userBetOutcome = userBet.outcome;
+            }
+
+            return card;
+        }
+
+        function createCompletedMatchCard(match) {
+            const card = document.createElement('div');
+            card.className = 'match-card';
+            card.dataset.matchId = match.id;
+            card.style.opacity = '0.9';
+            card.style.background = '#f9f9f9';
+
+            const datetime = new Date(match.match_datetime).toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            const actualOutcome = match.home_score > match.away_score ? 'home_win' :
+                                 match.away_score > match.home_score ? 'away_win' : 'draw';
+            const outcomeLabel = match.home_score > match.away_score ? 'Home Win' :
+                                 match.away_score > match.home_score ? 'Away Win' : 'Draw';
+
+            const userBet = userBets[match.id];
+
+            // User's bet section
+            let betHtml = '';
+            if (userBet) {
+                const betOutcomeLabel =
+                    userBet.outcome === 'home_win' ? 'Home Win' :
+                    userBet.outcome === 'away_win' ? 'Away Win' : 'Draw';
+                const status = userBet.status;
+                const statusColors = {
+                    won:     { bg: '#c8e6c9', color: '#2e7d32', border: '#2e7d32' },
+                    lost:    { bg: '#ffcdd2', color: '#c62828', border: '#c62828' },
+                    push:    { bg: '#f5f5f5', color: '#666',    border: '#bbb'    },
+                    pending: { bg: '#e3f2fd', color: '#1565c0', border: '#1565c0' },
+                };
+                const sc = statusColors[status] || statusColors.pending;
+                const payoutLine = status === 'won' && userBet.actual_payout != null
+                    ? `<div style="color:#2e7d32;font-weight:700;font-size:15px;margin-top:4px;">+${userBet.actual_payout.toFixed(2)} tokens</div>`
+                    : status === 'lost'
+                    ? `<div style="color:#c62828;font-size:13px;margin-top:4px;">0 tokens</div>`
+                    : '';
+
+                betHtml = `
+                    <div style="padding:12px 16px;border-radius:8px;border-left:4px solid ${sc.border};background:${sc.bg};margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Your Bet</div>
+                            <div style="font-weight:600;color:#333;">${betOutcomeLabel} <span style="color:#888;font-weight:400;">@ ${userBet.odds.toFixed(2)}</span></div>
+                            ${payoutLine}
+                        </div>
+                        <div style="font-size:13px;font-weight:700;color:${sc.color};text-transform:uppercase;">${status}</div>
+                    </div>`;
+            } else {
+                betHtml = `
+                    <div style="padding:12px 16px;border-radius:8px;background:#f0f0f0;margin-top:12px;font-size:13px;color:#aaa;text-align:center;">
+                        No bet placed
+                    </div>`;
+            }
+
+            card.innerHTML = `
+                <div class="match-header">
+                    <div class="match-time">${datetime}</div>
+                    <div class="match-status" style="background: #c8e6c9; color: #2e7d32;">COMPLETED</div>
+                </div>
+
+                <div class="match-teams">
+                    <div class="team">
+                        <div class="team-name">${match.home_team}</div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="team">
+                        <div class="team-name">${match.away_team}</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; margin-bottom: 0;">
+                    <div style="font-size: 32px; font-weight: 700; color: #333; margin-bottom: 8px;">
+                        ${match.home_score} - ${match.away_score}
+                    </div>
+                    <div style="font-size: 14px; color: #666; font-weight: 500;">
+                        ${outcomeLabel}
+                    </div>
+                </div>
+
+                ${betHtml}
+            `;
+
+            return card;
+        }
+
+        async function loadMatchOdds(matchId) {
+            try {
+                const response = await fetch(`${API_URL}/bets/match/${matchId}/odds`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const odds = await response.json();
+                    // Store odds for later reference (for winning odds display)
+                    matchOdds[matchId] = odds.outcomes;
+
+                    odds.outcomes.forEach(outcome => {
+                        const oddsEl = document.getElementById(`odds-${outcome.outcome}-${matchId}`);
+                        const probEl = document.getElementById(`prob-${outcome.outcome}-${matchId}`);
+                        if (oddsEl) {
+                            oddsEl.textContent = outcome.odds.toFixed(2);
+                            probEl.textContent = `${outcome.implied_probability.toFixed(1)}%`;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load odds:', error);
+            }
+        }
+
+        async function placeBet(matchId, outcome, event) {
+            const button = event.currentTarget;
+            button.disabled = true;
+
+            try {
+                // Check if user already has a bet for this match
+                const existingBet = userBets[matchId];
+                let isUpdate = false;
+
+                if (existingBet) {
+                    // Delete the existing bet first
+                    isUpdate = true;
+                    const deleteResponse = await fetch(`${API_URL}/bets/${existingBet.id}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    if (!deleteResponse.ok) {
+                        console.warn('Failed to delete existing bet, will try to update');
+                    }
+                }
+
+                const response = await fetch(`${API_URL}/bets`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        match_id: matchId,
+                        outcome: outcome
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    const errorMsg = error.detail || error.message || 'Failed to place bet';
+                    throw new Error(errorMsg);
+                }
+
+                // Show indicator on match card - find the card element from the button
+                let matchCard = button.closest('.match-card');
+                console.log('Match card found:', matchCard);
+                if (matchCard) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'bet-success-indicator';
+                    const message = isUpdate ? 'Updated!' : 'Bet placed!';
+                    indicator.textContent = `✓ ${message}`;
+                    console.log('Adding indicator:', indicator);
+                    matchCard.appendChild(indicator);
+
+                    // Remove indicator after animation completes (5 seconds total: 3s fade out animation starts at 2.5s)
+                    setTimeout(() => {
+                        console.log('Removing indicator');
+                        indicator.remove();
+                    }, 5000);
+                } else {
+                    console.log('Match card not found from button:', button);
+                }
+
+
+                // Reload bets from database
+                await loadUserBets();
+
+                // Just re-apply highlighting without full re-render
+                applyBetHighlighting();
+
+            } catch (error) {
+                console.error('Error placing bet:', error);
+                showMessage(error.message, 'error');
+                button.disabled = false;
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message show ${type}`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+
+        function scrollToFirstUnplayed() {
+            const firstUnplayed = document.getElementById('first-unplayed');
+            if (firstUnplayed) {
+                setTimeout(() => {
+                    firstUnplayed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 200);
+            }
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // League modals
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+            // Clear inputs and messages
+            const modal = document.getElementById(id);
+            modal.querySelectorAll('input').forEach(i => i.value = '');
+            modal.querySelectorAll('.modal-message').forEach(m => {
+                m.className = 'modal-message';
+                m.textContent = '';
+            });
+        }
+
+        function handleOverlayClick(event, id) {
+            if (event.target === event.currentTarget) closeModal(id);
+        }
+
+        function setModalMsg(msgId, text, type) {
+            const el = document.getElementById(msgId);
+            el.textContent = text;
+            el.className = `modal-message ${type}`;
+        }
+
+        async function handleCreateLeague() {
+            const name = document.getElementById('leagueName').value.trim();
+            const description = document.getElementById('leagueDesc').value.trim();
+            if (!name) { setModalMsg('createLeagueMsg', 'League name is required.', 'error'); return; }
+
+            const btn = document.getElementById('createLeagueBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`${API_URL}/leagues`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: description || null })
+                });
+
+                const text = await response.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) { data = {}; }
+
+                if (!response.ok) {
+                    setModalMsg('createLeagueMsg', data.detail || 'Failed to create league.', 'error');
+                    return;
+                }
+
+                setModalMsg('createLeagueMsg', `League created! Invite code: ${data.code}`, 'success');
+                btn.textContent = 'Created!';
+            } catch (err) {
+                setModalMsg('createLeagueMsg', 'Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                if (btn.textContent === 'Creating...') btn.textContent = 'Create';
+            }
+        }
+
+        async function handleJoinLeague() {
+            const code = document.getElementById('leagueCode').value.trim().toUpperCase();
+            if (!code) { setModalMsg('joinLeagueMsg', 'Invite code is required.', 'error'); return; }
+
+            const btn = document.getElementById('joinLeagueBtn');
+            btn.disabled = true;
+            btn.textContent = 'Joining...';
+
+            try {
+                const response = await fetch(`${API_URL}/leagues/join`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const text = await response.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) { data = {}; }
+
+                if (!response.ok) {
+                    setModalMsg('joinLeagueMsg', data.detail || 'Failed to join league.', 'error');
+                    return;
+                }
+
+                setModalMsg('joinLeagueMsg', `Joined "${data.name}"! View it in Standings.`, 'success');
+                btn.textContent = 'Joined!';
+            } catch (err) {
+                setModalMsg('joinLeagueMsg', 'Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                if (btn.textContent === 'Joining...') btn.textContent = 'Join';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Standings - World Cup Predictions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header-content p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .nav-button {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-button:hover {
+            background: #e0e0e0;
+        }
+
+        .nav-button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .nav-button.primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-button.logout {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .nav-button.logout:hover {
+            background: #f5c6cb;
+        }
+
+        .nav-button.dev {
+            background: #e2e3e5;
+            color: #383d41;
+            font-size: 12px;
+        }
+
+        .nav-button.dev:hover {
+            background: #d3d4d5;
+        }
+
+        /* League Selection */
+        .league-selector {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .league-selector h2 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .league-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .league-option {
+            padding: 16px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .league-option:hover {
+            background: #efefef;
+            border-color: #667eea;
+        }
+
+        .league-option.active {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-color: #667eea;
+        }
+
+        .league-option-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .league-option-code {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .league-option-members {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Leaderboard */
+        .leaderboard-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .leaderboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+        }
+
+        .leaderboard-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .leaderboard-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th {
+            background: #f8f8f8;
+            padding: 20px 32px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 1px solid #e0e0e0;
+            letter-spacing: 0.5px;
+        }
+
+        .leaderboard-table th:first-child {
+            width: 60px;
+        }
+
+        .leaderboard-table th:nth-child(2) {
+            width: 40%;
+        }
+
+        .leaderboard-table td {
+            padding: 20px 32px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #333;
+        }
+
+        .leaderboard-table tr:hover {
+            background: #f8f8f8;
+        }
+
+        .leaderboard-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rank-cell {
+            font-size: 18px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .rank-cell.rank-1 {
+            color: #ffa500;
+            font-size: 20px;
+        }
+
+        .rank-cell.rank-2 {
+            color: #c0c0c0;
+            font-size: 20px;
+        }
+
+        .rank-cell.rank-3 {
+            color: #cd7f32;
+            font-size: 20px;
+        }
+
+        .medal {
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .username-cell {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .points-cell {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .points-breakdown {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+            font-weight: 400;
+            display: flex;
+            gap: 16px;
+        }
+
+        .score-component {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .score-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #bbb;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .score-value {
+            font-size: 13px;
+            color: #888;
+            font-weight: 500;
+        }
+
+        .stats-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 32px;
+            color: #666;
+        }
+
+        .empty-state svg {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error State */
+        .error-message {
+            background: #fee;
+            color: #c62828;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid #c62828;
+        }
+
+        /* Message System */
+        .message {
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .message.error {
+            background: #ffcdd2;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .message.info {
+            background: #bbdefb;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .nav-buttons {
+                width: 100%;
+            }
+
+            .nav-button {
+                flex: 1;
+            }
+
+            .leaderboard-table th,
+            .leaderboard-table td {
+                padding: 16px;
+                font-size: 12px;
+            }
+
+            .leaderboard-header {
+                padding: 16px;
+            }
+
+            .leaderboard-header h2 {
+                font-size: 18px;
+            }
+
+            .rank-cell,
+            .rank-cell.rank-1,
+            .rank-cell.rank-2,
+            .rank-cell.rank-3 {
+                font-size: 16px;
+            }
+
+            .points-cell {
+                font-size: 16px;
+            }
+
+            .league-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* League Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .modal-field {
+            margin-bottom: 16px;
+        }
+
+        .modal-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .modal-field input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-field input:focus {
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel { background: #f0f0f0; color: #333; }
+        .btn-cancel:hover { background: #e0e0e0; }
+        .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .modal-message {
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        .modal-message.success { background: #c8e6c9; color: #2e7d32; display: block; }
+        .modal-message.error { background: #ffcdd2; color: #c62828; display: block; }
+
+        .league-delete-btn {
+            margin-top: 8px;
+            padding: 4px 10px;
+            background: #ffcdd2;
+            color: #c62828;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .league-delete-btn:hover {
+            background: #ef9a9a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>🏆 League Standings</h1>
+                <p>Combined standings: Witt Classic predictions + Betting</p>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-button primary" onclick="navigateTo('betting.html')">🎲 Place Bets</button>
+                <button class="nav-button primary" onclick="navigateTo('witt-classic.html')">⚽ Make Predictions</button>
+                <button class="nav-button" onclick="navigateTo('results.html')">📊 Results</button>
+                <button class="nav-button" onclick="openLeagueModal('createLeagueModal')">🏟️ Create League</button>
+                <button class="nav-button" onclick="openLeagueModal('joinLeagueModal')">🤝 Join League</button>
+                <button id="admin-btn" class="nav-button" onclick="navigateTo('admin.html')" style="display: none;">⚙️ Admin</button>
+                <button class="nav-button logout" onclick="logout()">🚪 Logout</button>
+                <button class="nav-button dev" onclick="navigateTo('login.html')">← Back to Login</button>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div id="messages"></div>
+
+    <!-- Create League Modal -->
+    <div id="createLeagueModal" class="modal-overlay" onclick="handleOverlayClick(event, 'createLeagueModal')">
+        <div class="modal">
+            <h2>🏟️ Create League</h2>
+            <p>Create a private league and invite friends with the share code.</p>
+            <div id="createLeagueMsg" class="modal-message"></div>
+            <div class="modal-field">
+                <label for="leagueName">League Name *</label>
+                <input type="text" id="leagueName" placeholder="e.g. Office Champions" maxlength="100">
+            </div>
+            <div class="modal-field">
+                <label for="leagueDesc">Description (optional)</label>
+                <input type="text" id="leagueDesc" placeholder="A short description" maxlength="200">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeLeagueModal('createLeagueModal')">Cancel</button>
+                <button class="btn-submit" id="createLeagueBtn" onclick="handleCreateLeague()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Join League Modal -->
+    <div id="joinLeagueModal" class="modal-overlay" onclick="handleOverlayClick(event, 'joinLeagueModal')">
+        <div class="modal">
+            <h2>🤝 Join League</h2>
+            <p>Enter the invite code shared by the league creator.</p>
+            <div id="joinLeagueMsg" class="modal-message"></div>
+            <div class="modal-field">
+                <label for="leagueCode">Invite Code *</label>
+                <input type="text" id="leagueCode" placeholder="e.g. ABC123" maxlength="20" style="text-transform:uppercase">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeLeagueModal('joinLeagueModal')">Cancel</button>
+                <button class="btn-submit" id="joinLeagueBtn" onclick="handleJoinLeague()">Join</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- League Selector -->
+        <div class="league-selector" id="leagueSelector" style="display: none;">
+            <h2>Select a League</h2>
+            <div class="league-list" id="leagueList"></div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard-container" id="leaderboardContainer" style="display: none;">
+            <div class="leaderboard-header">
+                <h2 id="leaderboardTitle">Loading...</h2>
+                <p id="leaderboardSubtitle"></p>
+            </div>
+            <table class="leaderboard-table" id="leaderboardTable">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingState" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Loading standings...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <h3>No leagues found</h3>
+            <p>Create or join a league to get started</p>
+        </div>
+    </div>
+
+    <script>
+        // Use localhost for development, otherwise use current origin
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+
+        let currentUserId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                console.log('Checking auth...');
+                let response = await fetch(`${API_URL}/auth/me`, {
+                    credentials: 'include'
+                });
+
+                console.log('Auth response status:', response.status);
+
+                if (!response.ok) {
+                    // Access token expired — try refreshing it
+                    const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+                        method: 'POST',
+                        credentials: 'include'
+                    });
+                    if (!refreshResponse.ok) {
+                        console.log('Auth failed, redirecting to login');
+                        navigateTo('login.html');
+                        return;
+                    }
+                    response = await fetch(`${API_URL}/auth/me`, { credentials: 'include' });
+                    if (!response.ok) {
+                        console.log('Auth failed after refresh, redirecting to login');
+                        navigateTo('login.html');
+                        return;
+                    }
+                }
+
+                const user = await response.json();
+                console.log('Auth successful:', user);
+                currentUserId = user.id;
+
+                if (user.is_admin) {
+                    document.getElementById('admin-btn').style.display = 'block';
+                }
+
+                loadLeagues();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                showMessage('Error checking authentication', 'error');
+                // Try to load anyway
+                loadLeagues();
+            }
+        }
+
+        // Load user's leagues
+        async function loadLeagues() {
+            try {
+                showLoading(true);
+
+                console.log('Loading leagues from:', `${API_URL}/leagues/`);
+                const response = await fetch(`${API_URL}/leagues/`, {
+                    credentials: 'include'
+                });
+
+                console.log('Leagues response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Leagues error:', errorData);
+                    throw new Error(`Failed to load leagues: ${response.status} ${JSON.stringify(errorData)}`);
+                }
+
+                const text = await response.text();
+                console.log('Raw response:', text);
+
+                const leagues = JSON.parse(text);
+                console.log('Parsed leagues:', leagues);
+
+                if (leagues.length === 0) {
+                    showEmpty();
+                    return;
+                }
+
+                displayLeagueSelector(leagues);
+                loadLeaderboard(leagues[0].id);
+            } catch (error) {
+                console.error('Failed to load leagues:', error);
+                console.error('Error details:', error.message);
+                showMessage('Failed to load leagues: ' + error.message, 'error');
+                showEmpty();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display league selector
+        function displayLeagueSelector(leagues) {
+            const selector = document.getElementById('leagueSelector');
+            const list = document.getElementById('leagueList');
+
+            list.innerHTML = '';
+
+            leagues.forEach((league, index) => {
+                const option = document.createElement('div');
+                option.className = `league-option ${index === 0 ? 'active' : ''}`;
+                const isCreator = league.creator_id === currentUserId;
+                option.innerHTML = `
+                    <div class="league-option-name">${escapeHtml(league.name)}</div>
+                    <div class="league-option-code">Code: ${escapeHtml(league.code)}</div>
+                    <div class="league-option-members">${league.member_count || 0} members</div>
+                    ${isCreator ? `<button class="league-delete-btn" onclick="confirmDeleteLeague(event, '${league.id}', '${escapeHtml(league.name)}')">🗑️ Delete</button>` : ''}
+                `;
+                option.onclick = (e) => {
+                    if (!e.target.classList.contains('league-delete-btn')) {
+                        selectLeague(league.id, leagues, e);
+                    }
+                };
+                list.appendChild(option);
+            });
+
+            selector.style.display = 'block';
+        }
+
+        // Select league
+        function selectLeague(leagueId, leagues, e) {
+            // Update UI
+            document.querySelectorAll('.league-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            (e || event).target.closest('.league-option').classList.add('active');
+
+            // Load leaderboard
+            loadLeaderboard(leagueId);
+        }
+
+        // Load leaderboard
+        async function loadLeaderboard(leagueId) {
+            try {
+                showLoading(true);
+
+                const response = await fetch(
+                    `${API_URL}/predictions/league/${leagueId}/combined-leaderboard`,
+                    { credentials: 'include' }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to load leaderboard');
+                }
+
+                const data = await response.json();
+                displayLeaderboard(data);
+            } catch (error) {
+                console.error('Failed to load leaderboard:', error);
+                showMessage('Failed to load standings', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display leaderboard
+        function displayLeaderboard(data) {
+            const title = document.getElementById('leaderboardTitle');
+            const subtitle = document.getElementById('leaderboardSubtitle');
+            const tbody = document.getElementById('leaderboardBody');
+            const container = document.getElementById('leaderboardContainer');
+
+            title.textContent = `${escapeHtml(data.league_name)}`;
+            subtitle.textContent = `${data.entries.length} players • Combined Standings`;
+
+            tbody.innerHTML = '';
+
+            data.entries.forEach(entry => {
+                const row = document.createElement('tr');
+                const medal = getMedalEmoji(entry.rank);
+                const rankClass = `rank-${entry.rank}`;
+                const totalScore = (entry.total_score || 0).toFixed(2);
+                const predictionsScore = (entry.predictions_score || 0).toFixed(0);
+                const bettingScore = (entry.betting_score || 0).toFixed(2);
+
+                row.innerHTML = `
+                    <td>
+                        <span class="rank-cell ${rankClass}">
+                            ${medal ? `<span class="medal">${medal}</span>` : ''}${entry.rank}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="username-cell">${escapeHtml(entry.username)}</div>
+                    </td>
+                    <td>
+                        <div class="points-cell">
+                            ${totalScore}
+                            <div class="points-breakdown">
+                                <div class="score-component">
+                                    <span class="score-label">Witt's</span>
+                                    <span class="score-value">${predictionsScore}</span>
+                                </div>
+                                <div class="score-component">
+                                    <span class="score-label">Betting</span>
+                                    <span class="score-value">${bettingScore}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            container.style.display = 'block';
+        }
+
+        // Get medal emoji
+        function getMedalEmoji(rank) {
+            const medals = {
+                1: '🥇',
+                2: '🥈',
+                3: '🥉'
+            };
+            return medals[rank] || '';
+        }
+
+        // Show/hide loading
+        function showLoading(show) {
+            document.getElementById('loadingState').style.display = show ? 'block' : 'none';
+            document.getElementById('leaderboardContainer').style.display = show ? 'none' : 'block';
+            document.getElementById('leagueSelector').style.display = show ? 'none' : 'block';
+        }
+
+        // Show empty state
+        function showEmpty() {
+            document.getElementById('leagueSelector').style.display = 'none';
+            document.getElementById('leaderboardContainer').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const container = document.getElementById('messages');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            container.appendChild(message);
+
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        // Navigate to page
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Delete league
+        function confirmDeleteLeague(event, leagueId, leagueName) {
+            event.stopPropagation();
+            if (!confirm(`Delete "${leagueName}"?\n\nThis will permanently delete the league and remove all members. This cannot be undone.`)) return;
+            handleDeleteLeague(leagueId, leagueName);
+        }
+
+        async function handleDeleteLeague(leagueId, leagueName) {
+            try {
+                const response = await fetch(`${API_URL}/leagues/${leagueId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    let errorMsg = 'Failed to delete league';
+                    try { errorMsg = JSON.parse(text).detail || errorMsg; } catch(e) {}
+                    showMessage(errorMsg, 'error');
+                    return;
+                }
+
+                showMessage(`League "${leagueName}" deleted.`, 'success');
+                loadLeagues();
+            } catch (err) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        // League modals
+        function openLeagueModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLeagueModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = '';
+            const modal = document.getElementById(id);
+            modal.querySelectorAll('input').forEach(i => i.value = '');
+            modal.querySelectorAll('.modal-message').forEach(m => {
+                m.className = 'modal-message';
+                m.textContent = '';
+            });
+        }
+
+        function handleOverlayClick(event, id) {
+            if (event.target === event.currentTarget) closeLeagueModal(id);
+        }
+
+        function setModalMsg(msgId, text, type) {
+            const el = document.getElementById(msgId);
+            el.textContent = text;
+            el.className = `modal-message ${type}`;
+        }
+
+        async function handleCreateLeague() {
+            const name = document.getElementById('leagueName').value.trim();
+            const description = document.getElementById('leagueDesc').value.trim();
+            if (!name) { setModalMsg('createLeagueMsg', 'League name is required.', 'error'); return; }
+
+            const btn = document.getElementById('createLeagueBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                const response = await fetch(`${API_URL}/leagues`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description: description || null })
+                });
+
+                const text = await response.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) { data = {}; }
+
+                if (!response.ok) {
+                    setModalMsg('createLeagueMsg', data.detail || 'Failed to create league.', 'error');
+                    return;
+                }
+
+                setModalMsg('createLeagueMsg', `League created! Invite code: ${data.code}`, 'success');
+                btn.textContent = 'Created!';
+                loadLeagues();
+            } catch (err) {
+                setModalMsg('createLeagueMsg', 'Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                if (btn.textContent === 'Creating...') btn.textContent = 'Create';
+            }
+        }
+
+        async function handleJoinLeague() {
+            const code = document.getElementById('leagueCode').value.trim().toUpperCase();
+            if (!code) { setModalMsg('joinLeagueMsg', 'Invite code is required.', 'error'); return; }
+
+            const btn = document.getElementById('joinLeagueBtn');
+            btn.disabled = true;
+            btn.textContent = 'Joining...';
+
+            try {
+                const response = await fetch(`${API_URL}/leagues/join`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const text = await response.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) { data = {}; }
+
+                if (!response.ok) {
+                    setModalMsg('joinLeagueMsg', data.detail || 'Failed to join league.', 'error');
+                    return;
+                }
+
+                setModalMsg('joinLeagueMsg', `Joined "${data.name}"!`, 'success');
+                btn.textContent = 'Joined!';
+                loadLeagues();
+            } catch (err) {
+                setModalMsg('joinLeagueMsg', 'Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                if (btn.textContent === 'Joining...') btn.textContent = 'Join';
+            }
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                const response = await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    showMessage('✓ Confirmation link sent to your email. Click it to logout.', 'success');
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    showMessage(error.detail || 'Failed to send logout link', 'error');
+                }
+            } catch (error) {
+                console.error('Logout failed:', error);
+                showMessage('Failed to send logout link: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

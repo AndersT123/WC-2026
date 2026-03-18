@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Cup Predictions - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="email"],
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus,
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #999;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 24px 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .user-info {
+            background: #f5f5f5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .user-info.show {
+            display: block;
+        }
+
+        .user-info h3 {
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .user-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .user-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .user-info-value {
+            color: #333;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 2px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loading:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .loading:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ World Cup Predictions</h1>
+            <p>Sign in to start predicting and betting</p>
+        </div>
+
+        <!-- Dev Mode Quick Login -->
+        <div id="dev-section" style="display: none; background: #f0f7ff; border: 2px solid #667eea; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+            <h3 style="color: #667eea; font-size: 14px; margin-bottom: 12px; margin-top: 0;">🚀 Dev Mode - Quick Login</h3>
+            <div id="dev-buttons" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;"></div>
+            <p style="font-size: 12px; color: #999; margin-top: 12px; margin-bottom: 0;">These buttons only appear in development mode (localhost)</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="signup">Sign Up</button>
+            <button class="tab-button" data-tab="login">Login</button>
+        </div>
+
+        <!-- Sign Up Section -->
+        <div id="signup" class="form-section active">
+            <div id="signup-message" class="message"></div>
+
+            <div id="signup-form">
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" placeholder="Choose your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" placeholder="your@email.com" required>
+                </div>
+
+                <button id="signup-button" onclick="handleSignup()">Send Magic Link</button>
+                <p class="helper-text">We'll send you an email with a magic link to complete your signup.</p>
+            </div>
+
+            <div id="signup-verify" style="display: none;">
+                <div class="form-group">
+                    <label for="signup-token">Magic Link Token</label>
+                    <input type="text" id="signup-token" placeholder="Paste the token from your email">
+                    <p class="helper-text">Check your email for the magic link. Copy the token and paste it here.</p>
+                </div>
+
+                <button id="signup-verify-button" onclick="handleSignupVerify()">Verify & Sign Up</button>
+                <button onclick="resetSignup()" style="background: #e0e0e0; color: #333; margin-top: 12px;">Back</button>
+            </div>
+        </div>
+
+        <!-- Login Section -->
+        <div id="login" class="form-section">
+            <div id="login-message" class="message"></div>
+
+            <div id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="your@email.com" required>
+                </div>
+
+                <button id="login-button" onclick="handleLogin()">Send Magic Link</button>
+                <p class="helper-text">We'll send you an email with a magic link to sign in.</p>
+            </div>
+
+            <div id="login-verify" style="display: none;">
+                <div class="form-group">
+                    <label for="login-token">Magic Link Token</label>
+                    <input type="text" id="login-token" placeholder="Paste the token from your email">
+                    <p class="helper-text">Check your email for the magic link. Copy the token and paste it here.</p>
+                </div>
+
+                <button id="login-verify-button" onclick="handleLoginVerify()">Verify & Login</button>
+                <button onclick="resetLogin()" style="background: #e0e0e0; color: #333; margin-top: 12px;">Back</button>
+            </div>
+        </div>
+
+        <!-- Authenticated Section -->
+        <div id="authenticated" class="form-section">
+            <div class="user-info show">
+                <h3>✓ You are logged in!</h3>
+                <div class="user-info-item">
+                    <span class="user-info-label">Username</span>
+                    <span class="user-info-value" id="user-username">-</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="user-info-label">Email</span>
+                    <span class="user-info-value" id="user-email">-</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="user-info-label">User ID</span>
+                    <span class="user-info-value" id="user-id">-</span>
+                </div>
+                <div class="user-info-item">
+                    <span class="user-info-label">Account Status</span>
+                    <span class="user-info-value" id="user-status">-</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                <button onclick="navigateTo('league-standings.html')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); flex: 1; padding: 12px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">🏆 Standings</button>
+                <button onclick="navigateTo('witt-classic.html')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); flex: 1; padding: 12px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">⚽ Predictions</button>
+                <button onclick="navigateTo('betting.html')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); flex: 1; padding: 12px; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">🎲 Betting</button>
+            </div>
+
+            <button id="logout-button" onclick="handleLogout()" style="background: #e74c3c;">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Use localhost for development, otherwise use current origin
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+        let currentUser = null;
+
+        // Tab switching
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+
+        function switchTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Deactivate all tabs
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(tabName).classList.add('active');
+
+            // Activate selected tab
+            event.target.classList.add('active');
+
+            // Reset forms
+            resetSignup();
+            resetLogin();
+        }
+
+        // SIGNUP
+        async function handleSignup() {
+            const username = document.getElementById('signup-username').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const messageEl = document.getElementById('signup-message');
+
+            if (!username || !email) {
+                showMessage(messageEl, 'Please fill in all fields', 'error');
+                return;
+            }
+
+            const button = document.getElementById('signup-button');
+            button.disabled = true;
+            button.innerHTML = 'Sending<span class="loading"></span><span class="loading"></span><span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showMessage(messageEl, data.detail || 'Signup failed', 'error');
+                    button.disabled = false;
+                    button.innerHTML = 'Send Magic Link';
+                    return;
+                }
+
+                showMessage(messageEl, `Magic link sent to ${data.email}. Check your email!`, 'info');
+                document.getElementById('signup-form').style.display = 'none';
+                document.getElementById('signup-verify').style.display = 'block';
+            } catch (error) {
+                showMessage(messageEl, 'Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.innerHTML = 'Send Magic Link';
+            }
+        }
+
+        async function handleSignupVerify() {
+            const username = document.getElementById('signup-username').value.trim();
+            const token = document.getElementById('signup-token').value.trim();
+            const messageEl = document.getElementById('signup-message');
+
+            if (!token) {
+                showMessage(messageEl, 'Please paste the magic link token', 'error');
+                return;
+            }
+
+            const button = document.getElementById('signup-verify-button');
+            button.disabled = true;
+            button.innerHTML = 'Verifying<span class="loading"></span><span class="loading"></span><span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/verify?token=${encodeURIComponent(token)}&username=${encodeURIComponent(username)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showMessage(messageEl, data.detail || 'Verification failed', 'error');
+                    button.disabled = false;
+                    button.innerHTML = 'Verify & Sign Up';
+                    return;
+                }
+
+                currentUser = data.user;
+                showMessage(messageEl, 'Account created! Welcome!', 'success');
+                showAuthenticatedView();
+
+                // Redirect to standings page after 1 second
+                setTimeout(() => {
+                    window.location.href = 'league-standings.html';
+                }, 1000);
+            } catch (error) {
+                showMessage(messageEl, 'Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.innerHTML = 'Verify & Sign Up';
+            }
+        }
+
+        function resetSignup() {
+            document.getElementById('signup-username').value = '';
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-token').value = '';
+            document.getElementById('signup-message').innerHTML = '';
+            document.getElementById('signup-form').style.display = 'block';
+            document.getElementById('signup-verify').style.display = 'none';
+        }
+
+        // LOGIN
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const messageEl = document.getElementById('login-message');
+
+            if (!email) {
+                showMessage(messageEl, 'Please enter your email', 'error');
+                return;
+            }
+
+            const button = document.getElementById('login-button');
+            button.disabled = true;
+            button.innerHTML = 'Sending<span class="loading"></span><span class="loading"></span><span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showMessage(messageEl, data.detail || 'Login failed', 'error');
+                    button.disabled = false;
+                    button.innerHTML = 'Send Magic Link';
+                    return;
+                }
+
+                showMessage(messageEl, `Magic link sent to ${data.email}. Check your email!`, 'info');
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('login-verify').style.display = 'block';
+            } catch (error) {
+                showMessage(messageEl, 'Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.innerHTML = 'Send Magic Link';
+            }
+        }
+
+        async function handleLoginVerify() {
+            const token = document.getElementById('login-token').value.trim();
+            const messageEl = document.getElementById('login-message');
+
+            if (!token) {
+                showMessage(messageEl, 'Please paste the magic link token', 'error');
+                return;
+            }
+
+            const button = document.getElementById('login-verify-button');
+            button.disabled = true;
+            button.innerHTML = 'Verifying<span class="loading"></span><span class="loading"></span><span class="loading"></span>';
+
+            try {
+                const response = await fetch(`${API_URL}/auth/verify?token=${encodeURIComponent(token)}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showMessage(messageEl, data.detail || 'Verification failed', 'error');
+                    button.disabled = false;
+                    button.innerHTML = 'Verify & Login';
+                    return;
+                }
+
+                currentUser = data.user;
+                showMessage(messageEl, 'Successfully logged in!', 'success');
+                showAuthenticatedView();
+
+                // Redirect to standings page after 1 second
+                setTimeout(() => {
+                    window.location.href = 'league-standings.html';
+                }, 1000);
+            } catch (error) {
+                showMessage(messageEl, 'Error: ' + error.message, 'error');
+                button.disabled = false;
+                button.innerHTML = 'Verify & Login';
+            }
+        }
+
+        function resetLogin() {
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-token').value = '';
+            document.getElementById('login-message').innerHTML = '';
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('login-verify').style.display = 'none';
+        }
+
+        // LOGOUT
+        async function handleLogout() {
+            try {
+                const response = await fetch(`${API_URL}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    currentUser = null;
+                    resetSignup();
+                    resetLogin();
+                    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+                    document.getElementById('signup').classList.add('active');
+                    document.querySelectorAll('.tab-button')[0].classList.add('active');
+                    document.querySelectorAll('.tab-button')[1].classList.remove('active');
+                }
+            } catch (error) {
+                alert('Logout error: ' + error.message);
+            }
+        }
+
+        // NAVIGATION
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // HELPERS
+        function showMessage(element, message, type) {
+            element.textContent = message;
+            element.className = `message show ${type}`;
+        }
+
+        function showAuthenticatedView() {
+            document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('authenticated').classList.add('active');
+
+            if (currentUser) {
+                document.getElementById('user-username').textContent = currentUser.username;
+                document.getElementById('user-email').textContent = currentUser.email;
+                document.getElementById('user-id').textContent = currentUser.id;
+                document.getElementById('user-status').textContent = currentUser.is_active ? 'Active' : 'Inactive';
+            }
+        }
+
+        // Check if already authenticated on page load
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    currentUser = user;
+                    showAuthenticatedView();
+                }
+            } catch (error) {
+                // Not authenticated, stay on login
+            }
+        }
+
+        // Load dev quick login buttons (only on localhost)
+        async function loadDevMode() {
+            if (!window.location.hostname.includes('localhost')) {
+                return; // Only in dev
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/dev/test-users`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.test_users && data.test_users.length > 0) {
+                        const devSection = document.getElementById('dev-section');
+                        const devButtons = document.getElementById('dev-buttons');
+
+                        devSection.style.display = 'block';
+                        devButtons.innerHTML = '';
+
+                        data.test_users.forEach(user => {
+                            const button = document.createElement('button');
+                            button.style.cssText = `
+                                padding: 10px 12px;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                font-size: 13px;
+                                transition: all 0.3s;
+                            `;
+                            button.innerHTML = `<strong>${user.username}</strong>`;
+                            button.onmouseover = () => {
+                                button.style.transform = 'translateY(-2px)';
+                                button.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+                            };
+                            button.onmouseout = () => {
+                                button.style.transform = 'none';
+                                button.style.boxShadow = 'none';
+                            };
+                            button.onclick = () => {
+                                window.location.href = user.login_url;
+                            };
+
+                            devButtons.appendChild(button);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.log('Dev mode not available:', error);
+            }
+        }
+
+        checkAuth();
+        loadDevMode();
+    </script>
+</body>
+</html>

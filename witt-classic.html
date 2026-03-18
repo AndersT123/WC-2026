@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Witt-Classic - World Cup Predictions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .header-content p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .back-button {
+            padding: 10px 16px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .back-button:hover {
+            background: #e0e0e0;
+        }
+
+        .matches-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .match-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .match-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .match-card.played {
+            background: #f9f9f9;
+            opacity: 0.9;
+        }
+
+        .match-card.upcoming.highlight {
+            border: 2px solid #667eea;
+            background: #f8f9ff;
+        }
+
+        .match-datetime {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .match-teams {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .team-flag {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .vs {
+            color: #999;
+            font-weight: 500;
+            padding: 0 12px;
+        }
+
+        .match-scores {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .score-input,
+        .score-display {
+            width: 70px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .score-input {
+            background: white;
+            color: #333;
+            border: 2px solid #667eea;
+            cursor: pointer;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .score-display {
+            background: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+            cursor: default;
+        }
+
+        .score-dash {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .placeholder {
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        .prediction-info {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        .prediction-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .prediction-label {
+            color: #999;
+        }
+
+        .prediction-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .prediction-value.correct {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .prediction-value.incorrect {
+            color: #c62828;
+        }
+
+        .match-status {
+            font-size: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+            color: #999;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .status-badge.upcoming {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-badge.played {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ddd, transparent);
+            margin: 32px 0;
+        }
+
+        .section-title {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .submit-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 20px;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .submit-section.show {
+            display: block;
+        }
+
+        .submit-button {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .changes-indicator {
+            text-align: center;
+            font-size: 12px;
+            color: #667eea;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            .team-name {
+                font-size: 14px;
+            }
+
+            .score-input,
+            .score-display {
+                width: 60px;
+                font-size: 16px;
+            }
+
+            .match-teams {
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>⚽ Witt-Classic</h1>
+                <p id="league-name">Loading...</p>
+                <p style="font-size: 12px; color: #999; margin-top: 4px;">Your predictions apply to all your leagues</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="back-button" onclick="navigateTo('league-standings.html')">🏆 Standings</button>
+                <button class="back-button" onclick="navigateTo('betting.html')">🎲 Place Bets</button>
+                <button class="back-button" onclick="navigateTo('results.html')">📊 Results</button>
+                <button id="admin-btn" class="back-button" onclick="navigateTo('admin.html')" style="display: none;">⚙️ Admin</button>
+            </div>
+        </div>
+
+        <!-- No-league panel -->
+        <div id="no-league-panel" style="display:none; max-width:480px; margin:80px auto; padding:32px; background:#fff; border-radius:12px; box-shadow:0 2px 16px rgba(0,0,0,0.1); text-align:center;">
+          <h2 style="margin-bottom:8px;">You're not in a league yet</h2>
+          <p style="color:#666; margin-bottom:24px;">Create a new league or join one with an invite code.</p>
+
+          <div style="margin-bottom:24px;">
+            <h3 style="margin-bottom:12px;">Create a league</h3>
+            <input id="new-league-name" type="text" placeholder="League name" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; margin-bottom:8px; box-sizing:border-box;" />
+            <button onclick="handleCreateLeague()" style="width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:6px; cursor:pointer;">Create League</button>
+          </div>
+
+          <div>
+            <h3 style="margin-bottom:12px;">Join a league</h3>
+            <input id="join-code" type="text" placeholder="Invite code" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; margin-bottom:8px; box-sizing:border-box;" />
+            <button onclick="handleJoinLeague()" style="width:100%; padding:10px; background:#16a34a; color:#fff; border:none; border-radius:6px; cursor:pointer;">Join League</button>
+          </div>
+
+          <p id="league-msg" style="margin-top:16px; color:#dc2626;"></p>
+        </div>
+
+        <!-- Matches Container -->
+        <div class="matches-container" id="matches-container">
+            <!-- Populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Submit Section -->
+    <div class="submit-section" id="submit-section">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div class="changes-indicator" id="changes-indicator" style="display: none;">
+                ✓ Changes detected
+            </div>
+            <button class="submit-button" id="submit-button" onclick="submitPredictions()">
+                Save Predictions
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Use localhost for development, otherwise use current origin
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000'
+            : window.location.origin;
+        let mockMatches = [];
+        let predictions = {};
+        let hasChanges = false;
+        let changedMatches = new Set();
+        let currentLeagueId = null;
+
+        async function handleCreateLeague() {
+            const name = document.getElementById('new-league-name').value.trim();
+            if (!name) return;
+            const res = await fetch(`${API_URL}/leagues`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            if (res.ok) location.reload();
+            else document.getElementById('league-msg').textContent = 'Failed to create league.';
+        }
+
+        async function handleJoinLeague() {
+            const code = document.getElementById('join-code').value.trim();
+            if (!code) return;
+            const res = await fetch(`${API_URL}/leagues/join`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code })
+            });
+            if (res.ok) location.reload();
+            else document.getElementById('league-msg').textContent = 'Invalid code or failed to join.';
+        }
+
+        // Initialize
+        function init() {
+            checkAuth();
+            setLeagueName();
+            loadMatches();
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    if (user.is_admin) {
+                        document.getElementById('admin-btn').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+
+        function setLeagueName() {
+            const leagueName = localStorage.getItem('selectedLeague') || 'My League';
+            document.getElementById('league-name').textContent = `${leagueName}`;
+        }
+
+        async function loadMatches() {
+            try {
+                // Get user's leagues first
+                const leaguesResponse = await fetch(`${API_URL}/leagues`, {
+                    credentials: 'include'
+                });
+
+                if (!leaguesResponse.ok) {
+                    throw new Error(`Failed to load leagues: ${leaguesResponse.status}`);
+                }
+
+                const leagues = await leaguesResponse.json();
+                if (leagues.length === 0) {
+                    document.getElementById('no-league-panel').style.display = 'block';
+                    return;
+                }
+
+                currentLeagueId = leagues[0].id;
+                console.log('Current league ID:', currentLeagueId);
+
+                // Get matches
+                const matchesResponse = await fetch(`${API_URL}/matches`, {
+                    credentials: 'include'
+                });
+
+                console.log('Matches response status:', matchesResponse.status);
+
+                if (!matchesResponse.ok) {
+                    const errorText = await matchesResponse.text();
+                    console.error('Matches error response:', errorText);
+                    throw new Error(`Failed to load matches: ${matchesResponse.status} ${errorText}`);
+                }
+
+                const matches = await matchesResponse.json();
+                console.log('Loaded matches:', matches);
+                mockMatches = matches;
+
+                // Load user's predictions (global, not per-league)
+                const predictionsResponse = await fetch(
+                    `${API_URL}/predictions/league/${currentLeagueId}/me`,
+                    { credentials: 'include' }
+                );
+
+                if (predictionsResponse.ok) {
+                    const userPredictions = await predictionsResponse.json();
+                    userPredictions.forEach(pred => {
+                        predictions[pred.match_id] = {
+                            home: pred.home_score,
+                            away: pred.away_score
+                            // Note: league_id no longer in response (predictions are global)
+                        };
+                    });
+                }
+
+                // Initialize predictions for all matches
+                mockMatches.forEach(match => {
+                    if (!predictions[match.id]) {
+                        predictions[match.id] = { home: '', away: '' };
+                    }
+                });
+
+                renderMatches();
+                scrollToFirstUnplayed();
+            } catch (error) {
+                console.error('Error loading matches:', error);
+                alert('Error loading matches: ' + error.message);
+            }
+        }
+
+        function renderMatches() {
+            const container = document.getElementById('matches-container');
+            container.innerHTML = '';
+
+            // Separate played and upcoming matches
+            const played = mockMatches.filter(m => m.status === 'completed');
+            const upcoming = mockMatches.filter(m => m.status === 'scheduled');
+
+            // Render played matches
+            if (played.length > 0) {
+                container.appendChild(createSectionTitle('PAST MATCHES'));
+                played.forEach(match => {
+                    container.appendChild(createPlayedMatchCard(match));
+                });
+            }
+
+            if (upcoming.length > 0) {
+                const divider = document.createElement('div');
+                divider.className = 'section-divider';
+                container.appendChild(divider);
+
+                container.appendChild(createSectionTitle('UPCOMING MATCHES'));
+                upcoming.forEach(match => {
+                    const isFirstUnplayed = match.id === upcoming[0].id;
+                    container.appendChild(createUpcomingMatchCard(match, isFirstUnplayed));
+                });
+            }
+
+            // Add bottom padding for fixed button
+            if (upcoming.length > 0) {
+                const spacer = document.createElement('div');
+                spacer.style.height = '120px';
+                container.appendChild(spacer);
+            }
+        }
+
+        function createSectionTitle(title) {
+            const div = document.createElement('div');
+            div.className = 'section-title';
+            div.textContent = title;
+            return div;
+        }
+
+        function createPlayedMatchCard(match) {
+            const card = document.createElement('div');
+            card.className = 'match-card played';
+
+            const datetime = formatDateTime(match.match_datetime);
+            const userPred = predictions[match.id];
+
+            let predictionInfo = '';
+            if (userPred && (userPred.home !== '' || userPred.away !== '')) {
+                const userScore = `${userPred.home}-${userPred.away}`;
+                const actualScore = `${match.home_score}-${match.away_score}`;
+                const isCorrect = userScore === actualScore;
+
+                predictionInfo = `
+                    <div class="prediction-info">
+                        <div class="prediction-row">
+                            <span class="prediction-label">Your Prediction:</span>
+                            <span class="prediction-value ${isCorrect ? 'correct' : 'incorrect'}">
+                                ${userScore}
+                            </span>
+                        </div>
+                        <div class="prediction-row">
+                            <span class="prediction-label">Actual Result:</span>
+                            <span class="prediction-value">${actualScore}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const actualScore = `${match.home_score}-${match.away_score}`;
+                predictionInfo = `
+                    <div class="prediction-info">
+                        <div class="prediction-row">
+                            <span class="prediction-label">Result:</span>
+                            <span class="prediction-value">${actualScore}</span>
+                        </div>
+                        <div class="prediction-row">
+                            <span class="prediction-label">Your Prediction:</span>
+                            <span class="prediction-value" style="color: #ccc;">No prediction</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="match-datetime">${datetime}</div>
+                <div class="match-teams">
+                    <div class="team">
+                        <div class="team-name">${match.home_team}</div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="team">
+                        <div class="team-name">${match.away_team}</div>
+                    </div>
+                </div>
+                <div class="match-scores">
+                    <div class="score-display">${match.home_score}</div>
+                    <div class="score-dash">-</div>
+                    <div class="score-display">${match.away_score}</div>
+                </div>
+                ${predictionInfo}
+                <div class="match-status">
+                    <span class="status-badge played">PLAYED</span>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function createUpcomingMatchCard(match, isFirstUnplayed) {
+            const card = document.createElement('div');
+            card.className = `match-card upcoming ${isFirstUnplayed ? 'highlight' : ''}`;
+            if (isFirstUnplayed) {
+                card.id = 'first-unplayed';
+            }
+
+            const datetime = formatDateTime(match.match_datetime);
+            const currentPred = predictions[match.id];
+
+            card.innerHTML = `
+                <div class="match-datetime">${datetime}</div>
+                <div class="match-teams">
+                    <div class="team">
+                        <div class="team-name">${match.home_team}</div>
+                    </div>
+                    <div class="vs">vs</div>
+                    <div class="team">
+                        <div class="team-name">${match.away_team}</div>
+                    </div>
+                </div>
+                <div class="match-scores">
+                    <input
+                        type="number"
+                        class="score-input"
+                        min="0"
+                        max="99"
+                        value="${currentPred.home || ''}"
+                        placeholder="0"
+                        onchange="updatePrediction('${match.id}', 'home', this.value)"
+                        onkeyup="updatePrediction('${match.id}', 'home', this.value)"
+                    >
+                    <div class="score-dash">-</div>
+                    <input
+                        type="number"
+                        class="score-input"
+                        min="0"
+                        max="99"
+                        value="${currentPred.away || ''}"
+                        placeholder="0"
+                        onchange="updatePrediction('${match.id}', 'away', this.value)"
+                        onkeyup="updatePrediction('${match.id}', 'away', this.value)"
+                    >
+                </div>
+                <div class="match-status">
+                    <span class="status-badge upcoming">UPCOMING</span>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function formatDateTime(datetime) {
+            const dateObj = new Date(datetime);
+            const options = { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false };
+            return dateObj.toLocaleDateString('en-GB', options);
+        }
+
+        function updatePrediction(matchId, side, value) {
+            if (!predictions[matchId]) {
+                predictions[matchId] = { home: '', away: '' };
+            }
+            const numValue = value === '' ? '' : parseInt(value) || '';
+            predictions[matchId][side] = numValue;
+            hasChanges = true;
+            changedMatches.add(matchId);
+
+            // Show submit button
+            const submitSection = document.getElementById('submit-section');
+            const changesIndicator = document.getElementById('changes-indicator');
+            submitSection.classList.add('show');
+            changesIndicator.style.display = 'block';
+        }
+
+        async function submitPredictions() {
+            const button = document.getElementById('submit-button');
+            button.disabled = true;
+            button.textContent = 'Saving...';
+
+            try {
+                // Save only changed predictions to backend
+                let savedCount = 0;
+                for (const matchId of changedMatches) {
+                    const pred = predictions[matchId];
+                    if (pred && (pred.home !== '' || pred.away !== '')) {
+                        const response = await fetch(`${API_URL}/predictions/`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                match_id: matchId,
+                                league_id: currentLeagueId,
+                                home_score: parseInt(pred.home) || 0,
+                                away_score: parseInt(pred.away) || 0
+                            })
+                        });
+
+                        if (response.ok) {
+                            savedCount++;
+                        } else {
+                            const errorData = await response.json().catch(() => ({}));
+                            console.warn(`Failed to save prediction for match ${matchId}:`, errorData);
+                        }
+                    }
+                }
+
+                alert(`✓ ${savedCount} predictions saved successfully!`);
+                hasChanges = false;
+                changedMatches.clear();
+
+                const submitSection = document.getElementById('submit-section');
+                const changesIndicator = document.getElementById('changes-indicator');
+                submitSection.classList.remove('show');
+                changesIndicator.style.display = 'none';
+
+                button.disabled = false;
+                button.textContent = 'Save Predictions';
+
+                console.log('Saved predictions:', savedCount);
+            } catch (error) {
+                console.error('Error saving predictions:', error);
+                alert('❌ Error saving predictions: ' + error.message);
+                button.disabled = false;
+                button.textContent = 'Save Predictions';
+            }
+        }
+
+        function scrollToFirstUnplayed() {
+            const firstUnplayed = document.getElementById('first-unplayed');
+            if (firstUnplayed) {
+                setTimeout(() => {
+                    firstUnplayed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 200);
+            }
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
